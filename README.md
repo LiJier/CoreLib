@@ -1,0 +1,2 @@
+# CoreLib
+android core lib
