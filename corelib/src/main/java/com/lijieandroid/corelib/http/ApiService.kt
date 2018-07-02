@@ -22,7 +22,7 @@ object ApiService {
             okHttpClient = it.build()
         } ?: run {
             okHttpClient = OkHttpClient.Builder()
-                    .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                    .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS))
                     .cookieJar(JavaNetCookieJar(CookieManager()))
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(1, TimeUnit.MINUTES)

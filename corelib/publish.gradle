@@ -1,0 +1,17 @@
+apply plugin: 'com.novoda.bintray-release'
+
+tasks.withType(Javadoc).all {
+    enabled = false
+}
+
+publish {
+    userOrg = 'ljie102968'//bintray.com用户名
+    groupId = 'com.lijieandroid'//jcenter上的路径
+    artifactId = 'corelib'//项目名称
+    publishVersion = '0.1.3'//版本号
+    desc = 'the core lib for android'//描述，不重要
+    website = 'https://github.com/LiJier/CoreLib'//网站，最好有，不重要
+    bintrayUser = 'ljie102968'
+    bintrayKey = '2036c391c4151ead985caf8d66bc6cde88ae0a2c'
+    dryRun = false
+}

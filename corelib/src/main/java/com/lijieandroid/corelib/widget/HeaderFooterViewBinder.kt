@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import me.drakeet.multitype.ItemViewBinder
 
 
-class HeaderFooterViewBinder(val recyclerView: RecyclerView) : ItemViewBinder<View, HeaderFooterViewBinder.HeaderFooterViewHolder>() {
+class HeaderFooterViewBinder(private val recyclerView: RecyclerView) : ItemViewBinder<View, HeaderFooterViewBinder.HeaderFooterViewHolder>() {
 
     override fun onCreateViewHolder(inflater: LayoutInflater, parent: ViewGroup): HeaderFooterViewHolder {
         val frameLayout = FrameLayout(parent.context)

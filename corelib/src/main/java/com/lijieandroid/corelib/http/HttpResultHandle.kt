@@ -15,7 +15,7 @@ object HttpResultHandle {
                 if (it.obtainIsSuccess()) {
                     return@flatMap Observable.just(it.obtainData())
                 } else {
-                    return@flatMap Observable.error<T>(IOException(it.obtainMessage()))
+                    return@flatMap Observable.error<T>(IOException(it.obtainMessage() ?: "know "))
                 }
             }
         }

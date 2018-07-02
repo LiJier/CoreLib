@@ -13,6 +13,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout
 import kotlinx.android.synthetic.main.layout_recycler_layout.view.*
 import me.drakeet.multitype.ItemViewBinder
 import me.drakeet.multitype.MultiTypeAdapter
+import me.drakeet.multitype.OneToManyFlow
 
 class RecyclerLayout : FrameLayout {
 
@@ -45,6 +46,7 @@ class RecyclerLayout : FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.layout_recycler_layout, this, true)
         adapter.register(View::class.java, HeaderFooterViewBinder(recycle_view))
         recycle_view.layoutManager = LinearLayoutManager(context)
+        emptyView = defaultEmptyLayoutCreator?.invoke()
         refresh_layout.setOnRefreshListener {
             onRefresh?.invoke(it)
         }
@@ -55,6 +57,10 @@ class RecyclerLayout : FrameLayout {
 
     fun <T> register(clazz: Class<out T>, binder: ItemViewBinder<T, *>) {
         adapter.register(clazz, binder)
+    }
+
+    fun <T> register(clazz: Class<out T>): OneToManyFlow<T> {
+        return adapter.register(clazz)
     }
 
     fun setLayoutManager(layoutManager: RecyclerView.LayoutManager) {
@@ -107,7 +113,7 @@ class RecyclerLayout : FrameLayout {
         notifyItems()
     }
 
-    fun notifyItems() {
+    private fun notifyItems() {
         allItemList.clear()
         allItemList.addAll(headerList)
         if (items.isEmpty()) {
@@ -121,5 +127,11 @@ class RecyclerLayout : FrameLayout {
         }
     }
 
+    companion object {
+        var defaultEmptyLayoutCreator: (() -> View)? = null
+    }
+
+    fun getRecycleView() = recycle_view
+    fun getRefreshLayout() = refresh_layout
 
 }

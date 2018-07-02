@@ -8,7 +8,7 @@ import io.reactivex.rxkotlin.addTo
 /**
  * 数据类
  */
-open class Repository {
+open class Repository : IRepository {
 
     /**
      * 耗时操作集合
@@ -47,7 +47,7 @@ open class Repository {
     /**
      * 清除，在ViewModel中使用时，会在ViewModel清除时调用
      */
-    open fun onCleared() {
+    override fun onCleared() {
         //清除时，取消所有耗时操作
         if (compositeDisposable.isDisposed.not()) {
             compositeDisposable.dispose()

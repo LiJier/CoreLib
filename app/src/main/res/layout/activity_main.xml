@@ -5,8 +5,13 @@
     android:layout_height="match_parent"
     tools:context="com.lijieandroid.app.MainActivity">
 
-    <com.lijieandroid.corelib.widget.RecyclerLayout
-        android:id="@+id/recyclerLayout"
+    <!--<com.lijieandroid.corelib.widget.RecyclerLayout-->
+    <!--android:id="@+id/recyclerLayout"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" />-->
+
+
+    <com.lijieandroid.corelib.widget.IndicatorsViewPager
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

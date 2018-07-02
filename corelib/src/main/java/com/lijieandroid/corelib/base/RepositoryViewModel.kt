@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModel
 /**
  * 包含数据类的ViewModel
  */
-open class RepositoryViewModel<out T : Repository>(private val repository: T) : ViewModel() {
+open class RepositoryViewModel<out T : IRepository>(private val repository: T) : ViewModel() {
 
     fun getRepository(): T = repository
 
