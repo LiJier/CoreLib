@@ -33,7 +33,6 @@ open class Repository : IRepository {
         override fun onError(e: Throwable) {
             e.printStackTrace()
             statusLiveData?.onError(e)
-            onComplete()
         }
     }
 

@@ -1,6 +1,6 @@
 package com.lijieandroid.corelib.http
 
-interface HttpResult<T> {
+interface HttpResult<out T> {
 
     fun obtainIsSuccess(): Boolean
     fun obtainData(): T?

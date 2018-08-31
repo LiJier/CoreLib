@@ -55,6 +55,10 @@ abstract class BaseFragment : Fragment() {
 
     protected open fun onInitData() {}
 
+    open fun onBackPressed():Boolean{
+        return false
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         //销毁时取消所有耗时操作

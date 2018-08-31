@@ -2,7 +2,6 @@ package com.lijieandroid.corelib.http
 
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
-import java.io.IOException
 
 /**
  * 处理接口返回实体类，获取data
@@ -13,9 +12,14 @@ object HttpResultHandle {
         return ObservableTransformer { upstream ->
             upstream.flatMap {
                 if (it.obtainIsSuccess()) {
-                    return@flatMap Observable.just(it.obtainData())
+                    it.obtainData()?.let { it1 ->
+                        return@flatMap Observable.just(it1)
+                    } ?: run {
+                        return@flatMap Observable.empty<T>()
+                    }
                 } else {
-                    return@flatMap Observable.error<T>(IOException(it.obtainMessage() ?: "know "))
+                    return@flatMap Observable.error<T>(HttpResultException(it.obtainMessage()
+                            ?: "未知错误"))
                 }
             }
         }

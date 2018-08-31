@@ -15,6 +15,7 @@ import com.lijieandroid.corelib.R
 import com.lijieandroid.corelib.number.dpToPx
 import com.lijieandroid.corelib.rx.toMain
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.layout_indicators_pager.view.*
 import java.util.concurrent.TimeUnit
@@ -26,6 +27,8 @@ class IndicatorsViewPager : FrameLayout {
     private var indicators: Int = 0
     private var autoScroll = false
     private val onPageChangeListeners: MutableList<ViewPager.OnPageChangeListener> = arrayListOf()
+    private var disposable: Disposable? = null
+    var scrollTime = 2
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
@@ -110,9 +113,14 @@ class IndicatorsViewPager : FrameLayout {
     }
 
     private fun startAutoScroll() {
-        Observable.interval(2, TimeUnit.SECONDS)
+        disposable?.let {
+            if (it.isDisposed.not()) {
+                it.dispose()
+            }
+        }
+        disposable = Observable.interval(scrollTime.toLong(), TimeUnit.SECONDS)
                 .toMain(Schedulers.newThread())
-                .subscribe {
+                .subscribe { _ ->
                     view_pager.adapter?.let {
                         if (view_pager.currentItem == it.count - 1) {
                             view_pager.currentItem = 0
