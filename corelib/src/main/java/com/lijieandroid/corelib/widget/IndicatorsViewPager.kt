@@ -9,8 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.RadioButton
 import com.lijieandroid.corelib.R
 import com.lijieandroid.corelib.number.dpToPx
 import com.lijieandroid.corelib.rx.toMain
@@ -24,18 +24,23 @@ import java.util.concurrent.TimeUnit
 class IndicatorsViewPager : FrameLayout {
 
     private var loop = false
-    private var indicators: Int = 0
+    private var indicatorsSelected = 0
+    private var indicatorsUnselected = 0
     private var autoScroll = false
     private val onPageChangeListeners: MutableList<ViewPager.OnPageChangeListener> = arrayListOf()
     private var disposable: Disposable? = null
-    var scrollTime = 2
+    private var indicatorsMargin = 0
+    var scrollTime = 5
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.IndicatorsViewPager)
         loop = typedArray.getBoolean(R.styleable.IndicatorsViewPager_loop, false)
-        indicators = typedArray.getResourceId(R.styleable.IndicatorsViewPager_indicators, 0)
+        indicatorsSelected = typedArray.getResourceId(R.styleable.IndicatorsViewPager_indicators_selected, 0)
+        indicatorsUnselected = typedArray.getResourceId(R.styleable.IndicatorsViewPager_indicators_unselected, 0)
         autoScroll = typedArray.getBoolean(R.styleable.IndicatorsViewPager_auto_scroll, false)
+        scrollTime = typedArray.getInteger(R.styleable.IndicatorsViewPager_scroll_time, 5)
+        indicatorsMargin = typedArray.getDimensionPixelSize(R.styleable.IndicatorsViewPager_indicators_margin, 8f.dpToPx().toInt())
         typedArray.recycle()
     }
 
@@ -43,18 +48,6 @@ class IndicatorsViewPager : FrameLayout {
     override fun onFinishInflate() {
         super.onFinishInflate()
         LayoutInflater.from(context).inflate(R.layout.layout_indicators_pager, this, true)
-    }
-
-    fun setAdapter(adapter: PagerAdapter) {
-        if (loop) {
-            view_pager.adapter = LoopAdapter(adapter)
-        } else {
-            view_pager.adapter = adapter
-        }
-        if (autoScroll) {
-            startAutoScroll()
-        }
-        setPagerIndicators(adapter)
         view_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
             override fun onPageScrollStateChanged(state: Int) {
@@ -65,13 +58,17 @@ class IndicatorsViewPager : FrameLayout {
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                 onPageChangeListeners.forEach {
-                    it.onPageScrolled(position % adapter.count, positionOffset, positionOffsetPixels)
+                    view_pager.adapter?.let { adapter ->
+                        it.onPageScrolled(position % adapter.count, positionOffset, positionOffsetPixels)
+                    }
                 }
             }
 
             override fun onPageSelected(position: Int) {
                 onPageChangeListeners.forEach {
-                    it.onPageSelected(position % adapter.count)
+                    view_pager.adapter?.let { adapter ->
+                        it.onPageSelected(position % adapter.count)
+                    }
                 }
             }
 
@@ -80,15 +77,27 @@ class IndicatorsViewPager : FrameLayout {
 
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                for (i in 0 until radio_group.childCount) {
-                    val radioButton = radio_group.getChildAt(i) as RadioButton
-                    radioButton.isChecked = false
+                for (i in 0 until indicators_layout.childCount) {
+                    val imageView = indicators_layout.getChildAt(i) as? ImageView
+                    imageView?.setImageDrawable(ResourcesCompat.getDrawable(resources, indicatorsUnselected, null))
                 }
-                val radioButton = radio_group.getChildAt(position) as RadioButton
-                radioButton.isChecked = true
+                val imageView = indicators_layout.getChildAt(position) as? ImageView
+                imageView?.setImageDrawable(ResourcesCompat.getDrawable(resources, indicatorsSelected, null))
             }
 
         })
+    }
+
+    fun setAdapter(adapter: PagerAdapter) {
+        if (loop) {
+            view_pager.adapter = LoopAdapter(adapter)
+        } else {
+            view_pager.adapter = adapter
+        }
+        setPagerIndicators(adapter)
+        if (autoScroll) {
+            startAutoScroll()
+        }
     }
 
     fun addOnPageChangeListener(listener: ViewPager.OnPageChangeListener) {
@@ -96,19 +105,18 @@ class IndicatorsViewPager : FrameLayout {
     }
 
     private fun setPagerIndicators(adapter: PagerAdapter) {
-        radio_group.removeAllViews()
+        indicators_layout.removeAllViews()
         (0 until adapter.count).forEach {
-            val radioButton = RadioButton(context)
-            if (indicators != 0) {
-                radioButton.buttonDrawable = ResourcesCompat.getDrawable(resources, indicators, null)
-            }
+            val imageView = ImageView(context)
+            imageView.setImageDrawable(ResourcesCompat.getDrawable(resources, indicatorsUnselected, null))
             val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT)
-            val margin = 8f.dpToPx().toInt()
-            layoutParams.setMargins(margin, margin, margin, margin)
-            radioButton.layoutParams = layoutParams
-            radioButton.isChecked = it == 0
-            radio_group.addView(radioButton)
+            layoutParams.setMargins(indicatorsMargin, indicatorsMargin, indicatorsMargin, indicatorsMargin)
+            imageView.layoutParams = layoutParams
+            if (it == 0) {
+                imageView.setImageDrawable(ResourcesCompat.getDrawable(resources, indicatorsSelected, null))
+            }
+            indicators_layout.addView(imageView)
         }
     }
 
@@ -120,9 +128,9 @@ class IndicatorsViewPager : FrameLayout {
         }
         disposable = Observable.interval(scrollTime.toLong(), TimeUnit.SECONDS)
                 .toMain(Schedulers.newThread())
-                .subscribe { _ ->
-                    view_pager.adapter?.let {
-                        if (view_pager.currentItem == it.count - 1) {
+                .subscribe {
+                    view_pager.adapter?.let { pagerAdapter ->
+                        if (view_pager.currentItem == pagerAdapter.count - 1) {
                             view_pager.currentItem = 0
                         } else {
                             view_pager.currentItem += 1

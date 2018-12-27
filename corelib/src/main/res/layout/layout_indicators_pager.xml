@@ -8,8 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <RadioGroup
-        android:id="@+id/radio_group"
+    <LinearLayout
+        android:id="@+id/indicators_layout"
         android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

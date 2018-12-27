@@ -17,8 +17,8 @@ open class BaseActivity : AppCompatActivity() {
      */
     private val compositeDisposable = CompositeDisposable()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onResume() {
+        super.onResume()
         ActivityManager.add(this)
     }
 
@@ -44,9 +44,13 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        ActivityManager.pop(this)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        ActivityManager.pop(this)
         //界面销毁时取消所有耗时操作
         if (compositeDisposable.isDisposed.not()) {
             compositeDisposable.dispose()

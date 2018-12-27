@@ -3,6 +3,9 @@
     <declare-styleable name="IndicatorsViewPager">
         <attr name="loop" format="boolean"/>
         <attr name="auto_scroll" format="boolean"/>
-        <attr name="indicators" format="reference"/>
+        <attr name="indicators_selected" format="reference"/>
+        <attr name="indicators_unselected" format="reference"/>
+        <attr name="indicators_margin" format="dimension"/>
+        <attr name="scroll_time" format="integer"/>
     </declare-styleable>
 </resources>

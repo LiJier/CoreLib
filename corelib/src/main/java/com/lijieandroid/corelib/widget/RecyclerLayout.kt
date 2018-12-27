@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import com.lijieandroid.corelib.R
+import com.lijieandroid.corelib.widget.WrapRecyclerView.Companion.defaultEmptyLayoutCreator
 import com.scwang.smartrefresh.layout.api.RefreshLayout
 import kotlinx.android.synthetic.main.layout_recycler_layout.view.*
 import me.drakeet.multitype.ItemViewBinder
@@ -17,23 +18,18 @@ import me.drakeet.multitype.OneToManyFlow
 
 class RecyclerLayout : FrameLayout {
 
-    val adapter: MultiTypeAdapter = MultiTypeAdapter()
     var emptyView: View? = null
         set(value) {
             field = value
-            notifyItems()
+            recycle_view.emptyView = value
         }
     var items = mutableListOf<Any>()
         set(value) {
             field = value
-            notifyItems()
+            recycle_view.items = value
         }
     var onRefresh: ((RefreshLayout) -> Unit)? = null
     var onLoadMore: ((RefreshLayout, Int) -> Unit)? = null
-
-    private val headerList = mutableListOf<View>()
-    private val footerList = mutableListOf<View>()
-    private val allItemList = mutableListOf<Any>()
 
     private var currentPageIndex: Int = 1
 
@@ -44,9 +40,6 @@ class RecyclerLayout : FrameLayout {
     override fun onFinishInflate() {
         super.onFinishInflate()
         LayoutInflater.from(context).inflate(R.layout.layout_recycler_layout, this, true)
-        adapter.register(View::class.java, HeaderFooterViewBinder(recycle_view))
-        recycle_view.layoutManager = LinearLayoutManager(context)
-        emptyView = defaultEmptyLayoutCreator?.invoke()
         refresh_layout.setOnRefreshListener {
             onRefresh?.invoke(it)
         }
@@ -55,29 +48,24 @@ class RecyclerLayout : FrameLayout {
         }
     }
 
+    fun setLayoutManager(layoutManager: RecyclerView.LayoutManager) {
+        recycle_view.layoutManager = layoutManager
+    }
+
     fun <T> register(clazz: Class<out T>, binder: ItemViewBinder<T, *>) {
-        adapter.register(clazz, binder)
+        recycle_view.register(clazz, binder)
     }
 
     fun <T> register(clazz: Class<out T>): OneToManyFlow<T> {
-        return adapter.register(clazz)
+        return recycle_view.register(clazz)
     }
 
-    fun setLayoutManager(layoutManager: RecyclerView.LayoutManager) {
-        recycle_view.layoutManager = layoutManager
-        if (layoutManager is GridLayoutManager) {
-            val spanSizeLookup = layoutManager.spanSizeLookup
-            layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int {
-                    val viewType = adapter.items[position]
-                    return if (viewType is View) {
-                        layoutManager.spanCount
-                    } else {
-                        spanSizeLookup?.getSpanSize(position) ?: 1
-                    }
-                }
-            }
-        }
+    fun addHeader(view: View) {
+        recycle_view.addHeader(view)
+    }
+
+    fun addFooter(view: View) {
+        recycle_view.addFooter(view)
     }
 
     fun autoRefresh() {
@@ -103,33 +91,9 @@ class RecyclerLayout : FrameLayout {
         }
     }
 
-    fun addHeader(view: View) {
-        headerList.add(view)
-        notifyItems()
-    }
+    fun getHeaderCount(): Int = recycle_view.getHeaderCount()
 
-    fun addFooter(view: View) {
-        footerList.add(view)
-        notifyItems()
-    }
-
-    private fun notifyItems() {
-        allItemList.clear()
-        allItemList.addAll(headerList)
-        if (items.isEmpty()) {
-            emptyView?.let { allItemList.add(it) }
-        }
-        allItemList.addAll(items)
-        allItemList.addAll(footerList)
-        adapter.items = allItemList
-        recycle_view.adapter?.notifyDataSetChanged() ?: run {
-            recycle_view.adapter = adapter
-        }
-    }
-
-    companion object {
-        var defaultEmptyLayoutCreator: (() -> View)? = null
-    }
+    fun getFooterCount(): Int = recycle_view.getFooterCount()
 
     fun getRecycleView() = recycle_view
     fun getRefreshLayout() = refresh_layout
